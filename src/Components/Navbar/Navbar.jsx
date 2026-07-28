@@ -8,6 +8,10 @@ import "../../Components/Navbar/Navbar.css";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../../store/themeSlice";
 
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { logout } from "../../features/authentication/authenticationSlice";
+
 
 const NAV_LINKS = [
   { name: "Home", type: "route", path: "/" },
@@ -17,7 +21,7 @@ const NAV_LINKS = [
   { name: "About", type: "route", path: "/about" },
   { name: "Services", type: "route", path: "/service" },
 ];
- 
+
 function Navbar() {
 
   const dispatch = useDispatch();
@@ -29,7 +33,7 @@ const theme = useSelector((state) => state.theme.theme);
   const [isCartBumping, setIsCartBumping] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const prevCartCount = useRef(cartCount);
- 
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,19 +49,19 @@ const theme = useSelector((state) => state.theme.theme);
 
   useEffect(() => {
     document.body.style.overflow = isLoginOpen ? "hidden" : "auto";
- 
+
     const handleEscKey = (event) => {
       if (event.key === "Escape") setIsLoginOpen(false);
     };
 
     window.addEventListener("keydown", handleEscKey);
- 
+
     return () => {
       document.body.style.overflow = "auto";
       window.removeEventListener("keydown", handleEscKey);
     };
   }, [isLoginOpen]);
- 
+
   const handleNavClick = (link) => {
     setIsLoginOpen(false);
     setIsMobileMenuOpen(false);
@@ -73,7 +77,15 @@ const theme = useSelector((state) => state.theme.theme);
       document.getElementById(link.id)?.scrollIntoView({ behavior: "smooth" });
     }
   };
- 
+
+  const dispatch = useDispatch();
+  const [showProfile, setShowProfile] = useState(false);
+  const handleLogout = () => {
+    dispatch(logout());
+    setShowProfile(false);
+  };
+
+
   return (
     <div className="navbar">
       <div className="logo" onClick={() => navigate("/")}>
@@ -91,7 +103,7 @@ const theme = useSelector((state) => state.theme.theme);
           </span>
         ))}
       </div>
- 
+
       <div className="cp">
          <button
             className="theme-btn"
@@ -106,13 +118,48 @@ const theme = useSelector((state) => state.theme.theme);
           {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
         </div>
 
-        <FaUser
-          className="icon"
-          onClick={() => {
-            setIsLoginOpen(true);
-            setIsMobileMenuOpen(false);
-          }}
-        />
+
+        <div className="user-section">
+          <div
+            className="user-profile"
+            onClick={() => {
+              if (isAuthenticated) {
+                setShowProfile(!showProfile);
+              } else {
+                setIsLoginOpen(true);
+                setIsMobileMenuOpen(false);
+              }
+            }}
+          >
+            <FaUser className="icon" />
+
+            {isAuthenticated && (
+              <span className="user-name">
+                {user?.name || user?.fullName}
+              </span>
+            )}
+          </div>
+
+          {showProfile && isAuthenticated && (
+            <div className="profile-dropdown">
+              <h4>{user?.name || user?.fullName}</h4>
+
+              <p>{user?.phone}</p>
+              {console.log(user)}
+
+              <button
+                className="logout-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+
+
+
+
 
         <div
           className="icon menu-icon"
@@ -148,5 +195,5 @@ const theme = useSelector((state) => state.theme.theme);
     </div>
   );
 }
- 
+
 export default Navbar;
