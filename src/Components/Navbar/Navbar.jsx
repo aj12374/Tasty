@@ -5,7 +5,8 @@ import { FaUser, FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
 import Loginpage from "../Login/Login";
 import { useCart } from "../../context/useCart";
 import "../../Components/Navbar/Navbar.css";
-import { useTheme } from "../../context/TheameContext.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "../../store/themeSlice";
 
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -23,12 +24,10 @@ const NAV_LINKS = [
 
 function Navbar() {
 
-  const { theme, toggleTheme } = useTheme();
+  const dispatch = useDispatch();
 
-  const { user, isAuthenticated } = useSelector(
-    (state) => state.authentication
-  );
-
+const theme = useSelector((state) => state.theme.theme);
+  
   const { cartCount } = useCart();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCartBumping, setIsCartBumping] = useState(false);
@@ -106,10 +105,11 @@ function Navbar() {
       </div>
 
       <div className="cp">
-        <button className="theme-btn" onClick={toggleTheme}>
-          {theme === "dark" ? "🌞" : "🌙"}
-        </button>
-
+         <button
+            className="theme-btn"
+             onClick={() => dispatch(toggleTheme())}>
+               {theme === "dark" ? "🌞" : "🌙"}
+             </button>
         <div
           className={`cart-icon-animation ${isCartBumping ? "cart-bump" : ""}`}
           onClick={() => navigate("/cart")}
