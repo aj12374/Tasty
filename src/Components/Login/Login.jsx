@@ -27,7 +27,7 @@ function Loginpage({ onClose }) {
 
   dispatch(login(formData));
 
-  console.log("Login submitted:", formData);
+  //console.log("Login submitted:", formData);
 
   onClose?.();
 };

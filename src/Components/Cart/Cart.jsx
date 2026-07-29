@@ -46,7 +46,7 @@ function Cart() {
         <div className="cart-empty-card">
           <h2>Your Cart is Empty</h2>
           <p>Pick your favourites from the menu and start enjoying delicious food.</p>
-          <button className="primary-btn" onClick={"/menu"}>
+          <button className="primary-btn" onClick={handleContinueShopping}>
             Continue Shopping
           </button>
         </div>

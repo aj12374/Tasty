@@ -8,8 +8,7 @@ import "../../Components/Navbar/Navbar.css";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../../store/themeSlice";
 
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
+
 import { logout } from "../../features/authentication/authenticationSlice";
 
 
@@ -24,10 +23,13 @@ const NAV_LINKS = [
 
 function Navbar() {
 
-  const dispatch = useDispatch();
 
-const theme = useSelector((state) => state.theme.theme);
-  
+
+  const theme = useSelector((state) => state.theme.theme);
+  const { isAuthenticated, user } = useSelector(
+    (state) => state.authentication
+  );
+
   const { cartCount } = useCart();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCartBumping, setIsCartBumping] = useState(false);
@@ -105,11 +107,11 @@ const theme = useSelector((state) => state.theme.theme);
       </div>
 
       <div className="cp">
-         <button
-            className="theme-btn"
-             onClick={() => dispatch(toggleTheme())}>
-               {theme === "dark" ? "🌞" : "🌙"}
-             </button>
+        <button
+          className="theme-btn"
+          onClick={() => dispatch(toggleTheme())}>
+          {theme === "dark" ? "🌞" : "🌙"}
+        </button>
         <div
           className={`cart-icon-animation ${isCartBumping ? "cart-bump" : ""}`}
           onClick={() => navigate("/cart")}
@@ -145,7 +147,7 @@ const theme = useSelector((state) => state.theme.theme);
               <h4>{user?.name || user?.fullName}</h4>
 
               <p>{user?.phone}</p>
-              {console.log(user)}
+              
 
               <button
                 className="logout-btn"
