@@ -1,18 +1,33 @@
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../../context/useCart";
+//import { useCart } from "../../context/useCart";
+import { useDispatch, useSelector } from "react-redux";
 import "./Cart.css";
+import {
+  increaseQuantity,
+  decreaseQuantity,
+  removeFromCart,
+} from "../../Slices/cartSlice";
 
 function Cart() {
-  const {
+  const navigate = useNavigate();
+  /*const {
     cartItems,
     increaseQuantity,
     decreaseQuantity,
     removeFromCart,
     getTotalPrice,
-  } = useCart();
-  const navigate = useNavigate();
+  } = useCart();*/
+  const dispatch = useDispatch();
 
-  const subtotal = getTotalPrice();
+  const cartItems = useSelector(
+    (state) => state.cart.cartItems
+  );
+
+  //const subtotal = getTotalPrice();
+  const subtotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
   const deliveryCharge = subtotal > 0 ? 50 : 0;
   const gst = +(subtotal * 0.05).toFixed(2);
   const grandTotal = +(subtotal + deliveryCharge + gst).toFixed(2);
@@ -58,7 +73,7 @@ function Cart() {
               const itemTotal = price * item.quantity;
 
               return (
-                <article className="cart-item" key={item.key}>
+                <article className="cart-item" key={`${item.id}-${item.category}`}/*key={item.key}*/>
                   <img src={item.image} alt={item.name} className="cart-item-image" />
 
                   <div className="cart-item-details">
@@ -66,7 +81,15 @@ function Cart() {
                       <h2>{item.name}</h2>
                       <button
                         className="cart-remove"
-                        onClick={() => removeFromCart(item.key)}
+                        //onClick={() => removeFromCart(item.key)}
+                        onClick={() =>
+                          dispatch(
+                            removeFromCart({
+                              id: item.id,
+                              category: item.category,
+                            })
+                          )
+                        }
                       >
                         Remove
                       </button>
@@ -81,7 +104,15 @@ function Cart() {
                         <button
                           className="quantity-btn"
                           aria-label={`Decrease quantity of ${item.name}`}
-                          onClick={() => decreaseQuantity(item.key)}
+                          //onClick={() => decreaseQuantity(item.key)}
+                          onClick={() =>
+                            dispatch(
+                              decreaseQuantity({
+                                id: item.id,
+                                category: item.category,
+                              })
+                            )
+                          }
                         >
                           -
                         </button>
@@ -89,7 +120,15 @@ function Cart() {
                         <button
                           className="quantity-btn"
                           aria-label={`Increase quantity of ${item.name}`}
-                          onClick={() => increaseQuantity(item.key)}
+                          //onClick={() => increaseQuantity(item.key)}
+                          onClick={() =>
+                            dispatch(
+                              increaseQuantity({
+                                id: item.id,
+                                category: item.category,
+                              })
+                            )
+                          }
                         >
                           +
                         </button>

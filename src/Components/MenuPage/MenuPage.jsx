@@ -3,7 +3,9 @@ import pizzaData from "../Pizzas/Pizza.json";
 import burgerData from "../Burgers/Burger.json";
 import friesData from "../Fries/Fries.json";
 import dessertData from "../Desserts/Dessert.json";
-import { useCart } from "../../context/useCart";
+//import { useCart } from "../../context/useCart";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../Slices/cartSlice";
 import { FaUtensils, FaPizzaSlice, FaFire, FaClock, FaStar, FaLeaf, FaPepperHot } from 'react-icons/fa';
 import "./MenuPage.css";
 
@@ -25,7 +27,8 @@ const CATEGORY_DATA = {
 const CATEGORIES = Object.keys(CATEGORY_DATA);
 
 function MenuPage() {
-  const { addToCart } = useCart();
+  //const { addToCart } = useCart();
+  const dispatch = useDispatch();
 
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -95,7 +98,7 @@ function MenuPage() {
                 <button
                   className="menu-page-add"
                   aria-label={`Add ${item.name} to cart`}
-                  onClick={() => addToCart(item)}
+                  onClick={() =>dispatch(addToCart(item)) /*addToCart(item)*/}
                 >
                   +
                 </button>
