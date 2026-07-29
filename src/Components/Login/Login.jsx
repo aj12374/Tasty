@@ -3,7 +3,7 @@ import "./Login.css";
 import SignupPage from "../Signup/Signup";
 
 import { useDispatch } from "react-redux";
-import { login } from "../../features/authentication/authenticationSlice";
+import { login } from "../../Slices/authenticationSlice";
 
 function Loginpage({ onClose }) {
   const [showSignup, setShowSignup] = useState(false);

@@ -1,11 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../../context/useCart";
+//import { useCart } from "../../context/useCart";
+import { useDispatch, useSelector } from "react-redux";
+import { clearCart } from "../../Slices/cartSlice";
 import "./Checkout.css";
 
-// ...existing code...
 function Checkout() {
-  const { cartItems, getTotalPrice, clearCart } = useCart();
+  //const { cartItems, getTotalPrice, clearCart } = useCart();
+  const dispatch = useDispatch();
+  const cartItems = useSelector(
+    (state) => state.cart.cartItems
+  );
+
   const navigate = useNavigate();
 
   const initialForm = {
@@ -39,7 +45,11 @@ function Checkout() {
     }
   }, [cartItems, navigate, showModal]);
 
-  const subtotal = getTotalPrice();
+  //const subtotal = getTotalPrice();
+  const subtotal = cartItems.reduce(
+  (total, item) => total + item.price * item.quantity,
+  0
+);
   const deliveryCharge = subtotal > 0 ? 50 : 0;
   const gst = +(subtotal * 0.05).toFixed(2);
   const grandTotal = +(subtotal + deliveryCharge + gst).toFixed(2);
@@ -150,7 +160,8 @@ function Checkout() {
       setShowModal(true);
 
       // Clear cart only AFTER modal is shown (requirement)
-
+      dispatch(clearCart());
+      
       // mark finalized to prevent duplicates via back button
       sessionStorage.setItem("orderSubmitted", order.id);
     } catch (err) {
@@ -239,7 +250,7 @@ function Checkout() {
                 const price = parsePrice(item.price);
                 const total = price * item.quantity;
                 return (
-                  <div className="summary-item" key={item.key}>
+                  <div className="summary-item" key={`${item.id}-${item.category}`}/*key={item.key}*/>
                     <div>
                       <p>{item.name}</p>
                       <span>{item.quantity} x {formatPrice(price)}</span>

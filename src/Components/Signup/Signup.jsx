@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./SignUp.css";
 
 import { useDispatch } from "react-redux";
-import { signup } from "../../features/authentication/authenticationSlice";
+import { signup } from "../../Slices/authenticationSlice";
 
 function SignupPage({ onClose, onShowLogin }) {
   const [signupData, setSignupData] = useState({

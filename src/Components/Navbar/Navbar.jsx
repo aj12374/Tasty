@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import img from "../../assets/Logo.png";
 import { FaUser, FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
 import Loginpage from "../Login/Login";
-import { useCart } from "../../context/useCart";
+//import { useCart } from "../../context/useCart";
 import "../../Components/Navbar/Navbar.css";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../../store/themeSlice";
 
 
-import { logout } from "../../features/authentication/authenticationSlice";
+import { logout } from "../../Slices/authenticationSlice";
 
 
 const NAV_LINKS = [
@@ -30,7 +30,14 @@ function Navbar() {
     (state) => state.authentication
   );
 
-  const { cartCount } = useCart();
+  //const { cartCount } = useCart();
+  const cartItems = useSelector(
+    (state) => state.cart.cartItems
+  );
+  const cartCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCartBumping, setIsCartBumping] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -147,7 +154,7 @@ function Navbar() {
               <h4>{user?.name || user?.fullName}</h4>
 
               <p>{user?.phone}</p>
-              
+
 
               <button
                 className="logout-btn"
