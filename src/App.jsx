@@ -12,9 +12,12 @@ import AboutUs from "./Components/About/AboutUs";
 import Footer from "./Components/Footer/Footer";
 import Service from "./Components/Services/Service";
 import Loader from "./Components/Loader/Loader";
-
+import { useSelector } from "react-redux";
 import { CartProvider } from "./context/CartContext";
+
 function App() {
+  const theme = useSelector((state) => state.theme.theme);
+  document.body.className = theme;
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

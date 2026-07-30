@@ -1,11 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../../context/useCart";
+//import { useCart } from "../../context/useCart";
+import { useDispatch, useSelector } from "react-redux";
+import { clearCart } from "../../Slices/cartSlice";
 import "./Checkout.css";
+import { addOrder } from "../../Slices/orderSlice";
 
-// ...existing code...
 function Checkout() {
-  const { cartItems, getTotalPrice, clearCart } = useCart();
+  //const { cartItems, getTotalPrice, clearCart } = useCart();
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.cartItems);
+
   const navigate = useNavigate();
 
   const initialForm = {
@@ -31,15 +36,16 @@ function Checkout() {
   const modalRef = useRef(null);
 
   useEffect(() => {
-    if (
-      cartItems.length === 0 &&
-      !showModal
-    ) {
+    if (cartItems.length === 0 && !showModal) {
       navigate("/menu", { replace: true });
     }
   }, [cartItems, navigate, showModal]);
 
-  const subtotal = getTotalPrice();
+  //const subtotal = getTotalPrice();
+  const subtotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  );
   const deliveryCharge = subtotal > 0 ? 50 : 0;
   const gst = +(subtotal * 0.05).toFixed(2);
   const grandTotal = +(subtotal + deliveryCharge + gst).toFixed(2);
@@ -65,14 +71,18 @@ function Checkout() {
   const validateForm = () => {
     const newErrors = {};
     if (!form.fullName.trim()) newErrors.fullName = "Full Name is required.";
-    if (!/^\d{10}$/.test(form.mobileNumber)) newErrors.mobileNumber = "Mobile Number must be 10 digits.";
+    if (!/^\d{10}$/.test(form.mobileNumber))
+      newErrors.mobileNumber = "Mobile Number must be 10 digits.";
     if (!form.email.trim()) newErrors.email = "Email is required.";
-    if (!form.houseNumber.trim()) newErrors.houseNumber = "House Number is required.";
+    if (!form.houseNumber.trim())
+      newErrors.houseNumber = "House Number is required.";
     if (!form.street.trim()) newErrors.street = "Street is required.";
     if (!form.city.trim()) newErrors.city = "City is required.";
     if (!form.state.trim()) newErrors.state = "State is required.";
-    if (!/^\d{6}$/.test(form.pincode)) newErrors.pincode = "Pincode must be 6 digits.";
-    if (!form.paymentMethod) newErrors.paymentMethod = "Please select a payment method.";
+    if (!/^\d{6}$/.test(form.pincode))
+      newErrors.pincode = "Pincode must be 6 digits.";
+    if (!form.paymentMethod)
+      newErrors.paymentMethod = "Please select a payment method.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -94,10 +104,12 @@ function Checkout() {
   };
 
   const handlePlaceOrder = async (event) => {
-    if (event && typeof event.preventDefault === "function") event.preventDefault();
+    if (event && typeof event.preventDefault === "function")
+      event.preventDefault();
 
     // Prevent duplicate submissions
-    if (isSubmitting || sessionStorage.getItem("orderProcessing") === "true") return;
+    if (isSubmitting || sessionStorage.getItem("orderProcessing") === "true")
+      return;
 
     setSubmitError("");
     if (!validateForm()) return;
@@ -139,18 +151,23 @@ function Checkout() {
       };
 
       // persist the order (orders array + latestOrder)
+      // Save order to localStorage
       const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
       existingOrders.unshift(order);
+
       localStorage.setItem("orders", JSON.stringify(existingOrders));
-      try { localStorage.setItem("myOrders", JSON.stringify(existingOrders)); } catch (e) { }
+      localStorage.setItem("myOrders", JSON.stringify(existingOrders));
       localStorage.setItem("latestOrder", JSON.stringify(order));
 
-      // Open the CENTERED modal RIGHT AFTER successful save (no redirect)
+      // Add order to Redux Store
+      dispatch(addOrder(order));
+
+      // Show success modal
       setModalOrder(order);
       setShowModal(true);
 
-      // Clear cart only AFTER modal is shown (requirement)
-
+      // Clear cart
+      dispatch(clearCart());
       // mark finalized to prevent duplicates via back button
       sessionStorage.setItem("orderSubmitted", order.id);
     } catch (err) {
@@ -183,49 +200,107 @@ function Checkout() {
             <form onSubmit={handlePlaceOrder} noValidate>
               <div className="field-group">
                 <label htmlFor="fullName">Full Name</label>
-                <input id="fullName" name="fullName" type="text" value={form.fullName} onChange={handleChange} />
-                {errors.fullName && <p className="field-error">{errors.fullName}</p>}
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  value={form.fullName}
+                  onChange={handleChange}
+                />
+                {errors.fullName && (
+                  <p className="field-error">{errors.fullName}</p>
+                )}
               </div>
 
               <div className="field-group">
                 <label htmlFor="mobileNumber">Mobile Number</label>
-                <input id="mobileNumber" name="mobileNumber" type="tel" value={form.mobileNumber} onChange={handleChange} />
-                {errors.mobileNumber && <p className="field-error">{errors.mobileNumber}</p>}
+                <input
+                  id="mobileNumber"
+                  name="mobileNumber"
+                  type="tel"
+                  value={form.mobileNumber}
+                  onChange={handleChange}
+                />
+                {errors.mobileNumber && (
+                  <p className="field-error">{errors.mobileNumber}</p>
+                )}
               </div>
 
               <div className="field-group">
                 <label htmlFor="email">Email</label>
-                <input id="email" name="email" type="email" value={form.email} onChange={handleChange} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                />
                 {errors.email && <p className="field-error">{errors.email}</p>}
               </div>
 
               <div className="field-group">
                 <label htmlFor="houseNumber">House Number</label>
-                <input id="houseNumber" name="houseNumber" type="text" value={form.houseNumber} onChange={handleChange} />
-                {errors.houseNumber && <p className="field-error">{errors.houseNumber}</p>}
+                <input
+                  id="houseNumber"
+                  name="houseNumber"
+                  type="text"
+                  value={form.houseNumber}
+                  onChange={handleChange}
+                />
+                {errors.houseNumber && (
+                  <p className="field-error">{errors.houseNumber}</p>
+                )}
               </div>
 
               <div className="field-group">
                 <label htmlFor="street">Street</label>
-                <input id="street" name="street" type="text" value={form.street} onChange={handleChange} />
-                {errors.street && <p className="field-error">{errors.street}</p>}
+                <input
+                  id="street"
+                  name="street"
+                  type="text"
+                  value={form.street}
+                  onChange={handleChange}
+                />
+                {errors.street && (
+                  <p className="field-error">{errors.street}</p>
+                )}
               </div>
 
               <div className="field-group half">
                 <label htmlFor="city">City</label>
-                <input id="city" name="city" type="text" value={form.city} onChange={handleChange} />
+                <input
+                  id="city"
+                  name="city"
+                  type="text"
+                  value={form.city}
+                  onChange={handleChange}
+                />
                 {errors.city && <p className="field-error">{errors.city}</p>}
               </div>
               <div className="field-group half">
                 <label htmlFor="state">State</label>
-                <input id="state" name="state" type="text" value={form.state} onChange={handleChange} />
+                <input
+                  id="state"
+                  name="state"
+                  type="text"
+                  value={form.state}
+                  onChange={handleChange}
+                />
                 {errors.state && <p className="field-error">{errors.state}</p>}
               </div>
 
               <div className="field-group">
                 <label htmlFor="pincode">Pincode</label>
-                <input id="pincode" name="pincode" type="text" value={form.pincode} onChange={handleChange} />
-                {errors.pincode && <p className="field-error">{errors.pincode}</p>}
+                <input
+                  id="pincode"
+                  name="pincode"
+                  type="text"
+                  value={form.pincode}
+                  onChange={handleChange}
+                />
+                {errors.pincode && (
+                  <p className="field-error">{errors.pincode}</p>
+                )}
               </div>
             </form>
           </div>
@@ -239,10 +314,15 @@ function Checkout() {
                 const price = parsePrice(item.price);
                 const total = price * item.quantity;
                 return (
-                  <div className="summary-item" key={item.key}>
+                  <div
+                    className="summary-item"
+                    key={`${item.id}-${item.category}`} /*key={item.key}*/
+                  >
                     <div>
                       <p>{item.name}</p>
-                      <span>{item.quantity} x {formatPrice(price)}</span>
+                      <span>
+                        {item.quantity} x {formatPrice(price)}
+                      </span>
                     </div>
                     <strong>{formatPrice(total)}</strong>
                   </div>
@@ -268,12 +348,10 @@ function Checkout() {
                 <strong>{formatPrice(grandTotal)}</strong>
               </div>
 
-
               <div className="field-group payment-group">
                 <h5>Payment Method</h5>
                 <div className="payment-grid">
                   <div className="payment-options">
-
                     <label className="payment-option">
                       <input
                         type="radio"
@@ -306,9 +384,7 @@ function Checkout() {
                       />
                       Credit / Debit Card
                     </label>
-
                   </div>
-
 
                   {paymentMethod === "upi" && (
                     <div className="upi-dropdown">
@@ -331,48 +407,61 @@ function Checkout() {
 
                   {paymentMethod === "card" && (
                     <div className="card-payment-form">
-
                       <div className="form-group">
                         <label>Card Holder Name</label>
-                        <input
-                          type="text"
-                          placeholder="John Doe"
-                        />
+                        <input type="text" placeholder="John Doe" />
                       </div>
 
                       <div className="form-group">
                         <label>Card Last 4 Digits</label>
-                        <input
-                          type="text"
-                          placeholder="1234"
-                        />
+                        <input type="text" placeholder="1234" />
                       </div>
 
                       <div className="form-group">
                         <label>CVV</label>
-                        <input
-                          type="password"
-                          placeholder="123"
-                        />
+                        <input type="password" placeholder="123" />
                       </div>
-
                     </div>
                   )}
-
-
-
-
                 </div>
-                {errors.paymentMethod && <p className="field-error">{errors.paymentMethod}</p>}
+                {errors.paymentMethod && (
+                  <p className="field-error">{errors.paymentMethod}</p>
+                )}
               </div>
 
               {submitError && <p className="field-error">{submitError}</p>}
 
-              <button type="button" className="place-order-btn" onClick={handlePlaceOrder} disabled={isSubmitting}>
+              <button
+                type="button"
+                className="place-order-btn"
+                onClick={handlePlaceOrder}
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <svg width="18" height="18" viewBox="0 0 50 50" style={{ animation: "spin 1s linear infinite" }} xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="25" cy="25" r="20" stroke="#fff" strokeWidth="5" fill="none" strokeLinecap="round" strokeDasharray="31.4 31.4" />
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 50 50"
+                      style={{ animation: "spin 1s linear infinite" }}
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="25"
+                        cy="25"
+                        r="20"
+                        stroke="#fff"
+                        strokeWidth="5"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeDasharray="31.4 31.4"
+                      />
                     </svg>
                     Placing...
                   </span>
@@ -388,32 +477,71 @@ function Checkout() {
       {/* Success Modal */}
       {showModal && modalOrder && (
         <div className="order-modal-overlay" onMouseDown={handleOverlayClick}>
-          <div className="order-modal" ref={modalRef} onMouseDown={(e) => e.stopPropagation()}>
-            <button className="modal-close" aria-label="Close" onClick={() => setShowModal(false)}>×</button>
+          <div
+            className="order-modal"
+            ref={modalRef}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              aria-label="Close"
+              onClick={() => setShowModal(false)}
+            >
+              ×
+            </button>
 
             <div className="modal-content" style={{ textAlign: "center" }}>
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginBottom: 10,
+                }}
+              >
                 <svg width="72" height="72" viewBox="0 0 52 52" aria-hidden>
                   <circle cx="26" cy="26" r="25" fill="#E6F9EA" />
-                  <path d="M14 27l7 7 16-16" stroke="#2E9A4A" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none" strokeDasharray="48" strokeDashoffset="48" style={{ animation: "draw 420ms ease forwards 120ms" }} />
+                  <path
+                    d="M14 27l7 7 16-16"
+                    stroke="#2E9A4A"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                    strokeDasharray="48"
+                    strokeDashoffset="48"
+                    style={{ animation: "draw 420ms ease forwards 120ms" }}
+                  />
                 </svg>
               </div>
 
               <h2 style={{ margin: "6px 0" }}>Order Placed Successfully!</h2>
-              <p style={{ margin: "8px 0 16px", color: "#666" }}>Thank you! Your order has been placed successfully.</p>
+              <p style={{ margin: "8px 0 16px", color: "#666" }}>
+                Thank you! Your order has been placed successfully.
+              </p>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, textAlign: "left" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 12,
+                  textAlign: "left",
+                }}
+              >
                 <div>
                   <p className="label">Order ID</p>
                   <p className="value">{modalOrder.id}</p>
                 </div>
                 <div>
                   <p className="label">Total Amount</p>
-                  <p className="value">{formatPrice(modalOrder.summary?.grandTotal ?? grandTotal)}</p>
+                  <p className="value">
+                    {formatPrice(modalOrder.summary?.grandTotal ?? grandTotal)}
+                  </p>
                 </div>
                 <div>
                   <p className="label">Order Date & Time</p>
-                  <p className="value">{new Date(modalOrder.date).toLocaleString()}</p>
+                  <p className="value">
+                    {new Date(modalOrder.date).toLocaleString()}
+                  </p>
                 </div>
                 <div>
                   <p className="label">Estimated Delivery</p>
@@ -426,10 +554,35 @@ function Checkout() {
               </div>
 
               <div className="modal-actions">
-                <button className="primary" onClick={() => { setShowModal(false); navigate("/my-orders"); }} style={{ background: "#2E9A4A", color: "#fff", padding: "10px 14px", borderRadius: 8, border: "none" }}>
+                <button
+                  className="primary"
+                  onClick={() => {
+                    setShowModal(false);
+                    navigate("/my-orders");
+                  }}
+                  style={{
+                    background: "#2E9A4A",
+                    color: "#fff",
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    border: "none",
+                  }}
+                >
                   View My Orders
                 </button>
-                <button onClick={() => { setShowModal(false); navigate("/menu"); }} style={{ background: "#fff", color: "#333", padding: "10px 14px", borderRadius: 8, border: "1px solid #E6E6E6" }}>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    navigate("/menu");
+                  }}
+                  style={{
+                    background: "#fff",
+                    color: "#333",
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    border: "1px solid #E6E6E6",
+                  }}
+                >
                   Continue Shopping
                 </button>
               </div>
@@ -437,8 +590,6 @@ function Checkout() {
           </div>
         </div>
       )}
-
-
     </section>
   );
 }

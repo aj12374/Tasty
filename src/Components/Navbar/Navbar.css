@@ -284,3 +284,57 @@ background-color: var(--bg);
   }
 
 }
+
+.user-section {
+  position: relative;
+}
+
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  
+}
+
+.user-name {
+  font-size: 13px;
+  margin-top: 4px;
+  font-weight: 600;
+  font-size: 15px;
+  padding-left: 20px;
+  color: wheat;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  width: 220px;
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  text-align: center;
+}
+
+.profile-dropdown h4 {
+  margin: 0;
+}
+
+.profile-dropdown p {
+  margin: 8px 0 15px;
+  font-size: 13px;
+  color: gray;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #ff4d4d;
+  color: var(--text);
+  cursor: pointer;
+}

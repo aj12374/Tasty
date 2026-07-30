@@ -2,6 +2,9 @@ import { useState } from "react";
 import "./Login.css";
 import SignupPage from "../Signup/Signup";
 
+import { useDispatch } from "react-redux";
+import { login } from "../../Slices/authenticationSlice";
+
 function Loginpage({ onClose }) {
   const [showSignup, setShowSignup] = useState(false);
 
@@ -11,16 +14,23 @@ function Loginpage({ onClose }) {
     password: "",
   });
 
+  const dispatch = useDispatch();
+
   const handleChange = (event) => {
     const { id, value } = event.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
+
   const handleSubmit = (event) => {
-    event.preventDefault();
-    console.log("Login submitted:", formData);
-    onClose?.();
-  };
+  event.preventDefault();
+
+  dispatch(login(formData));
+
+  //console.log("Login submitted:", formData);
+
+  onClose?.();
+};
 
   if (showSignup) {
     return (
