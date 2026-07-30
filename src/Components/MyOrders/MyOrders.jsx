@@ -1,27 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchOrdersFromLocalStorage, formatOrderDate } from "../../services/orderService";
+import { useSelector, useDispatch } from "react-redux";
+import { loadOrders } from "../../Slices/orderSlice";
+import { formatOrderDate } from "../../services/orderService";
 import "./MyOrders.css";
 
 function MyOrders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleContinueShopping = () => navigate("/menu");
+
+  // Get data from Redux Store
+  const { orders, loading } = useSelector((state) => state.orders);
 
   useEffect(() => {
-    const loadOrders = () => {
-      try {
-        const allOrders = fetchOrdersFromLocalStorage();
-        setOrders(allOrders);
-      } catch (error) {
-        console.error("Error loading orders:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadOrders();
-  }, []);
+    dispatch(loadOrders());
+  }, [dispatch]);
 
   const formatPrice = (value) => {
     if (typeof value === "number") {
@@ -37,7 +31,7 @@ function MyOrders() {
     return (
       <section className="my-orders-page">
         <div className="page-heading">
-          <h1 className="heading">My Orders</h1>
+          <h1>My Orders</h1>
         </div>
         <div className="loading">Loading your orders...</div>
       </section>
@@ -48,7 +42,10 @@ function MyOrders() {
     <section className="my-orders-page">
       <div className="page-heading">
         <h1>My Orders</h1>
-        <p>You have placed {orders.length} order{orders.length !== 1 ? "s" : ""}</p>
+        <p>
+          You have placed {orders.length} order
+          {orders.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {orders.length === 0 ? (
@@ -56,7 +53,11 @@ function MyOrders() {
           <div className="empty-icon">📦</div>
           <h2>No Orders Placed Yet</h2>
           <p>Start exploring our menu and place your first order!</p>
-          <button className="btn-menu" onClick={() => navigate("/menu")}>
+
+          <button
+            className="btn-menu"
+            onClick={handleContinueShopping}
+          >
             Browse Menu
           </button>
         </div>
@@ -69,53 +70,80 @@ function MyOrders() {
                   <h3 className="order-id">{order.id}</h3>
                   <span className="order-status">{order.status}</span>
                 </div>
-                <p className="order-date">{formatOrderDate(order.date)}</p>
+
+                <p className="order-date">
+                  {formatOrderDate(order.date)}
+                </p>
               </div>
 
               <div className="order-details-grid">
                 <div className="detail-item">
                   <p className="detail-label">Items</p>
-                  <p className="detail-value">{order.items.length} items</p>
+                  <p className="detail-value">
+                    {order.items.length} items
+                  </p>
                 </div>
+
                 <div className="detail-item">
                   <p className="detail-label">Total</p>
-                  <p className="detail-value">{formatPrice(order.summary.grandTotal)}</p>
+                  <p className="detail-value">
+                    {formatPrice(order.summary.grandTotal)}
+                  </p>
                 </div>
+
                 <div className="detail-item">
                   <p className="detail-label">Payment</p>
-                  <p className="detail-value">{order.paymentMethod}</p>
+                  <p className="detail-value">
+                    {order.paymentMethod}
+                  </p>
                 </div>
               </div>
+
               <div className="order-details-grid">
                 <div className="order-items-list">
-                <p className="list-title">Items Ordered:</p>
-                {order.items.map((item, idx) => (
-                  <div key={idx} className="item-row">
-                    <span className="item-name">{item.name}</span>
-                    <span className="item-qty">x{item.quantity}</span>
-                  </div>
-                ))}
+                  <p className="list-title">Items Ordered:</p>
+
+                  {order.items.map((item, idx) => (
+                    <div key={idx} className="item-row">
+                      <span className="item-name">{item.name}</span>
+                      <span className="item-qty">
+                        x{item.quantity}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="order-address">
+                  <p className="address-title">
+                    Delivery Address:
+                  </p>
+
+                  <p className="address-text">
+                    {order.address.houseNumber},{" "}
+                    {order.address.street},{" "}
+                    {order.address.city},{" "}
+                    {order.address.state} -{" "}
+                    {order.address.pincode}
+                  </p>
+                </div>
+
+                <div className="order-contact">
+                  <p className="contact-title">Contact:</p>
+                  <p className="contact-text">
+                    {order.contact.mobileNumber}
+                  </p>
+                  <p className="contact-text">
+                    {order.contact.email}
+                  </p>
+                </div>
               </div>
 
-              <div className="order-address">
-                <p className="address-title">Delivery Address:</p>
-                <p className="address-text">
-                  {order.address.houseNumber}, {order.address.street}, {order.address.city},{" "}
-                  {order.address.state} - {order.address.pincode}
-                </p>
-              </div>
-
-              <div className="order-contact">
-                <p className="contact-title">Contact:</p>
-                <p className="contact-text">{order.contact.mobileNumber}</p>
-                <p className="contact-text">{order.contact.email}</p>
-              </div>
-            </div>
               <div className="order-footer">
                 <button
                   className="btn-primary"
-                  onClick={() => navigate("/home", { state: { order } })}
+                  onClick={handleContinueShopping}
                 >
+                
                   Continue Shopping
                 </button>
               </div>
