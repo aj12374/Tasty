@@ -36,7 +36,13 @@ function Checkout() {
   const modalRef = useRef(null);
 
   useEffect(() => {
-    if (cartItems.length === 0 && !showModal) {
+    const orderSubmitted = sessionStorage.getItem("orderSubmitted");
+
+    if (
+      cartItems.length === 0 &&
+      !showModal &&
+      !orderSubmitted
+    ) {
       navigate("/menu", { replace: true });
     }
   }, [cartItems, navigate, showModal]);
